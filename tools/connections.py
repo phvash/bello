@@ -1,7 +1,84 @@
 import socket
+import videofeed
+
+"""
+Notes:
+
+A. connection_type:
+
+The client can connect is to the host in two different modes
+  i. dummie mode: A test connection to host, returns the username of host if successful
+  ii. call mode: starts multiple threads for sending
+
+B. Server and host are used interchangeably to mean the same thing
+"""
 
 
-def listen(username, host='127.0.0.1', port=5099):
+# replies with username for dummie connection, video feed for chat request
+def reply(connection, username, client_address):
+
+    """ responsible for sending replies on behalf host machine """
+
+    client_ip, port = client_address
+    try:
+        while True:
+            data = connection.recv(1024)
+
+            if data and 'dummie' in data:
+                connection.sendall(username)
+                break
+
+            elif data and 'call' in data:
+
+                print 'live chat started with'
+
+                videofeed.send_video_feed(client_ip)
+    finally:
+        # Clean up the connection
+        connection.close()
+
+
+def get_username(host, connection, connection_type):
+
+    """ used by the client side to connect to a server
+    in DUMMIE mode in an attempt to get the username """
+
+    # connection.settimeout(0.01)
+    try:
+        # Send connection type
+        connection.sendall(connection_type)
+
+        # Look for the response
+        username = connection.recv(1024)
+        print '%s - %s' % (host, username)
+        connection.close()
+        return username
+    finally:
+        connection.close()
+
+
+def connect_host(connection_type, host='127.0.0.1', port=5098):
+
+    """ handles all outgoing connections from the CLIENT to SERVER """
+
+    # Create a TCP/IP socket
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    print 'connecting to %s port %s' % (host, port)
+    # starts a connection with server
+    sock.connect((host, port))
+    # receives
+    if connection_type == 'dummie':
+        username = get_username(host, sock, connection_type)
+        return username
+    elif connection_type == 'call':
+        sock.sendall(connection_type)
+        videofeed.receive_video_feed()
+
+
+def listen(username, host='127.0.0.1', port=5098):
+
+    """ lives on the HOST,
+        handles all incoming connections from CLIENT """
 
     s = socket.socket()
     s.bind((host, port))  # argument must be a tuple
@@ -11,63 +88,4 @@ def listen(username, host='127.0.0.1', port=5099):
     # get a connection and address of client
     c, addr = s.accept()
     print 'Connection from: %s' % (str(addr))
-    reply(c, username)
-
-
-# replies with username for dummie connection, video feed for chat request
-
-def reply(connection, username):
-
-    try:
-        while True:
-            data = connection.recv(1024)
-            print 'received "%s"' % data
-
-            if data and 'dummie' in data:
-                connection.sendall(username)
-                break
-
-            elif data and 'chat' in data:
-                print 'live chat started'
-                break
-    finally:
-        # Clean up the connection
-        connection.close()
-
-
-def connect_host(connection_type, host='127.0.0.1', port=5099):
-
-    # Create a TCP/IP socket
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-    print 'connecting to %s port %s' % (host, port)
-    sock.connect((host, port))
-    message(host, sock, connection_type)
-
-
-def message(host, connection, connection_type):
-
-    if connection_type.lower() == 'dummie':
-
-        try:
-            # Send connection type
-            connection.sendall(connection_type)
-
-            # Look for the response
-            username = connection.recv(1024)
-            print '%s - %s' % (host, username)
-
-        finally:
-            print 'closing socket'
-            connection.close()
-
-    elif connection_type.lower() == 'chat':
-
-        try:
-            # Send connection type
-            connection.sendall(connection_type)
-
-            # starting video feed
-
-        finally:
-            connection.close()
+    reply(c, username, addr)
