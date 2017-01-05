@@ -1,6 +1,6 @@
 ==========================================================================
 Bello: A Video chat platform implemented purely in python.
-Author: @Phvash
+@author: Phvash
 version 0.1 (Beta Preview)
 ==========================================================================
 
