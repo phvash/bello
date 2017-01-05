@@ -22,12 +22,12 @@ version 0.1 (Beta Preview)
 ### How to use:
 
 1. Always leave 'host.py' running in the background to accept incoming phone calls 
-   - To lauch, run 'host.py' from the terminal or cmd
-	i.e. $ python host.py
+   - To launch, run 'host.py' from the terminal or cmd
+	* $ python host.py
 
 2. To Make a phone call
    - Run the 'client.py' script from terminal
-	eg. $ python tcpClient.py 127.0.0.1
+	* $ python client.py 127.0.0.1
    - A list containing usernames of currently active (available) Bello users in your subnet will be returned
    - To place a call to any of them, enter the username when prompted.
 
