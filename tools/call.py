@@ -5,13 +5,15 @@ import socket
 
 
 class Call:
-	def __init__(self, client_ip='localhost'):
+	def __init__(self, vid_recv_port, vid_send_port, client_ip='localhost'):
 		self.client_ip = client_ip
 		self.job_queue = []
+		self.vid_recv_port = vid_recv_port
+		self.vid_send_port = vid_send_port
 	def start(self):
-		svf_obj = send_video_feed(self.client_ip)
+		svf_obj = send_video_feed(self.vid_send_port, self.client_ip)
 		self.job_queue.append(svf_obj)
-		rvf_obj = receive_video_feed()
+		rvf_obj = receive_video_feed(self.vid_recv_port)
 		self.job_queue.append(rvf_obj)
 		svf_obj.start()
 		rvf_obj.start()
@@ -22,10 +24,10 @@ class Call:
 
 
 class send_video_feed(threading.Thread):
-	def __init__(self, target_ip='localhost'):
+	def __init__(self, vid_send_port, target_ip='localhost'):
 		threading.Thread.__init__(self)
 		self.target_ip = target_ip
-		self.port = 5565
+		self.port = vid_send_port
 		self.cap = cv2.VideoCapture(0)
 	    
 	def run(self):
@@ -42,14 +44,15 @@ class send_video_feed(threading.Thread):
 	    s.close()
 
 class receive_video_feed(threading.Thread):
-	def __init__(self):
+	def __init__(self, vid_recv_port):
 		threading.Thread.__init__(self)
+		self.port = vid_recv_port
 
 
 	def run(self):	
 		while True:
 			host = ''
-			port = 5565
+			port = self.port
 			s = socket.socket()
 			s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 			s.bind((host, port))

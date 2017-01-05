@@ -32,7 +32,7 @@ def reply(connection, username, client_address):
 
             elif data and 'call' in data:
 
-                call_obj = Call()
+                call_obj = Call(vid_recv_port = 5009, vid_send_port = 5010)
                 call_obj.start()
 
                 print 'live chat started with'
@@ -63,7 +63,7 @@ def get_username(host, connection, connection_type):
         pass
 
 
-def connect_host(connection_type, host='127.0.0.1', port=5098):
+def connect_host(connection_type, host='0.0.0.0', port=5098):
 
     """ handles all outgoing connections from the CLIENT to SERVER """
 
@@ -79,11 +79,11 @@ def connect_host(connection_type, host='127.0.0.1', port=5098):
     elif connection_type == 'call':
         sock.sendall(connection_type)
         # videofeed.receive_video_feed()
-        call_obj = Call()
+        call_obj = Call(client_ip = host, vid_recv_port = 5010, vid_send_port = 5009)
         call_obj.start()
 
 
-def listen(username, host='127.0.0.1', port=5098):
+def listen(username, host='0.0.0.0', port=5098):
 
     """ lives on the HOST,
         handles all incoming connections from CLIENT """

@@ -98,15 +98,15 @@ def reformat_addrs(ip):
     return '.'.join(octects_list)
 
 
-def parse_ping_response(response):
+# def parse_ping_response(response):
 
-    pass
+#     pass
 
 
-def ping(address):
+# def ping(address):
 
-    print address.strip("'")
-    ping_stat = subprocess.check_output(['ping -c 1 ' + address], shell=True)
+#     print address.strip("'")
+#     ping_stat = subprocess.check_output(['ping -c 1 ' + address], shell=True)
 
     print ping_stat
 
