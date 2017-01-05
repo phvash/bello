@@ -1,5 +1,6 @@
 import subprocess
 import os
+import exceptions
 
 
 def get_wifi_detail():
@@ -13,15 +14,18 @@ def get_wifi_detail():
 
     raw_details = subprocess.check_output([command])
 
-    response = [addrs[addrs.find(':') + 1:]
-                for addrs in
-                 [line[line.find('inet') + 1:]
-                 for line in raw_details.split('\n')
-                 if 'inet addr' in line and '127' not in line][0].split(' ')
+    try:
+        response = [addrs[addrs.find(':') + 1:]
+                    for addrs in
+                     [line[line.find('inet') + 1:]
+                     for line in raw_details.split('\n')
+                     if 'inet addr' in line and '127' not in line][0].split(' ')
 
-                if addrs[addrs.find(':') + 1:].replace('.', '').isdigit()]
+                    if addrs[addrs.find(':') + 1:].replace('.', '').isdigit()]
 
-    return response
+        return response
+    except:
+        raise exceptions.ConnectionError("Please connect to a network")
 
 
 def get_addrs_range(wifi_detail_list):

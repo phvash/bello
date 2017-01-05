@@ -1,5 +1,7 @@
 import socket
-import videofeed
+# import videofeed
+from call import Call
+
 
 """
 Notes:
@@ -30,12 +32,16 @@ def reply(connection, username, client_address):
 
             elif data and 'call' in data:
 
+                call_obj = Call()
+                call_obj.start()
+
                 print 'live chat started with'
 
-                videofeed.send_video_feed(client_ip)
+                # videofeed.send_video_feed(client_ip)
     finally:
         # Clean up the connection
-        connection.close()
+        if connection:
+            connection.close()
 
 
 def get_username(host, connection, connection_type):
@@ -54,7 +60,7 @@ def get_username(host, connection, connection_type):
         connection.close()
         return username
     finally:
-        connection.close()
+        pass
 
 
 def connect_host(connection_type, host='127.0.0.1', port=5098):
@@ -72,7 +78,9 @@ def connect_host(connection_type, host='127.0.0.1', port=5098):
         return username
     elif connection_type == 'call':
         sock.sendall(connection_type)
-        videofeed.receive_video_feed()
+        # videofeed.receive_video_feed()
+        call_obj = Call()
+        call_obj.start()
 
 
 def listen(username, host='127.0.0.1', port=5098):
@@ -83,9 +91,10 @@ def listen(username, host='127.0.0.1', port=5098):
     s = socket.socket()
     s.bind((host, port))  # argument must be a tuple
 
-    print 'listening on port %s for connections' % port
-    s.listen(1)
-    # get a connection and address of client
-    c, addr = s.accept()
-    print 'Connection from: %s' % (str(addr))
-    reply(c, username, addr)
+    while True:
+        print 'listening on port %s for connections' % port
+        s.listen(1)
+        # get a connection and address of client
+        c, addr = s.accept()
+        print 'Connection from: %s' % (str(addr))
+        reply(c, username, addr)
