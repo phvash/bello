@@ -84,24 +84,29 @@ class RecvAud(threading.Thread):
 
     def process_audio(self):
         while True:
-            try:
-                print "got here"
-                # acquired = self.lock.acquire(0)
-                if len(self.playlist) > 0:
-                    current_track = self.playlist[0]
-                else:
-                    time.sleep(5)
-                    continue
-                self.playlist.remove(current_track)
+            # try:
+            print "got here"
+            # acquired = self.lock.acquire(0)
+            if len(self.playlist) > 0:
+                current_track = self.playlist[0]
+                print "got a track!"
+                raw_rec = np.fromstring(current_track, 'float32')
+                sd.play(raw_rec, 48000, blocking=True)
+                print "played track"
+            else:
+                time.sleep(5)
+                print "no track, retryin in 5"
+                continue
+            self.playlist.remove(current_track)
                 # self.lock.release()
-                if True:
-                    Player.play(current_track)
-                    print "played"
-                else:
-                    pass
-            finally:
-                if not self.recv_thread.isAlive():
-                    break
+                # if True:
+                #     Player.play(current_track)
+                #     print "played"
+                # else:
+                #     pass
+            # finally:
+            #     if not self.recv_thread.isAlive():
+            #         break
 
 if __name__ == '__main__':
     # a = Player.record()
