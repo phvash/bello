@@ -30,15 +30,27 @@ class SendAud(threading.Thread):
 
     def run(self):
         while True:
+            aud_str = Player.record()
+            connected = False
+            s = socket.socket()
+            print "connecting to " + self.target_ip + ' on ' + str(self.port)
+            while not connected:
+                try:
+                    s.connect((self.target_ip, self.port))
+                    connected = True
+                except socket.error:
+                    pass
+                finally:
+                    if connected:
+                        break
             try:
-                aud_str = Player.record()
-                s = socket.socket()
-                print "connection to " + self.target_ip + 'on' + str(self.port)
-                s.connect((self.target_ip, self.port))
+
+
+
                 s.sendall(aud_str)
                 s.close()
-            finally:
-                pass
+            except:
+                continue
 
 
 class RecvAud(threading.Thread):
