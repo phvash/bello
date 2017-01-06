@@ -79,7 +79,7 @@ class Call:
 #         cv2.destroyAllWindows()
 
 
-# quick test
+# test
 if __name__ == '__main__':
     call_obj = Call(5610, 6532)
     call_obj.start()
