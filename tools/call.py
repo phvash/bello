@@ -13,8 +13,8 @@ class Call:
         self.vid_send_port = vid_send_port
 
     def start(self):
-        recv_thread = audio.RecvAud(7079)
-        send_thread = audio.SendAud('127.0.0.1', 7079)
+        recv_thread = audio.RecvAud(self.vid_recv_port)
+        send_thread = audio.SendAud(self.client_ip, self.vid_send_port)
         self.job_queue.append(recv_thread)
         self.job_queue.append(send_thread)
         recv_thread.start()
