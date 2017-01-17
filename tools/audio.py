@@ -1,0 +1,160 @@
+import sounddevice as sd
+import numpy as np
+<<<<<<< HEAD
+import socket
+import threading
+import time
+
+
+class Player:
+    def __init__(self):
+        pass
+
+    @staticmethod
+    def record(duration=1, fs=48000, channels=2, blocking=True):
+        raw_rec = sd.rec(duration * fs,
+                         samplerate=fs, channels=channels, blocking=blocking)
+        return raw_rec.tostring()
+
+    @staticmethod
+    def play(string_data, fs=48000, data_type='float32', blocking=True):
+        raw_rec = np.fromstring(string_data, data_type)
+        sd.play(raw_rec, fs, blocking=blocking)
+
+
+class SendAud(threading.Thread):
+    def __init__(self, target_ip, port):
+        threading.Thread.__init__(self)
+        self.target_ip = target_ip
+        self.port = port
+        # self.aud_str = Player.record()
+
+    def run(self):
+        while True:
+            aud_str = Player.record()
+            connected = False
+            s = socket.socket()
+            print "connecting to " + self.target_ip + ' on ' + str(self.port)
+            while not connected:
+                try:
+                    s.connect((self.target_ip, self.port))
+                    connected = True
+                except socket.error:
+                    pass
+                finally:
+                    if connected:
+                        s.sendall(aud_str)
+                        s.close()
+                        break
+                    else:
+                        time.sleep(2)
+                        print "trying to reconnect on " + str(self.port)
+
+
+class RecvAud(threading.Thread):
+    def __init__(self, port):
+        threading.Thread.__init__(self)
+        self.host = ''
+        self.port = port
+        self.playlist = []
+        self.lock = threading.Lock()
+
+    def run(self):
+
+        self.recv_thread = threading.Thread(target=self.receive_audio,  name='recv_aud')
+        self.recv_thread.start()
+
+        self.proc_thread = threading.Thread(target=self.process_audio,  name='proc_aud')
+        self.proc_thread.start()
+
+    def receive_audio(self):
+        while True:
+            s = socket.socket()
+            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            s.bind((self.host, self.port))
+            print "Listening on port", self.port
+            s.listen(1)
+            conn, addr = s.accept()
+            print 'connection from', addr
+
+            received = []  # contains aud_string received in one conn
+            while True:
+                data = conn.recv(1024)
+                if not data:
+                    break
+                else:
+                    received.append(data)
+                    # print "received data"
+            aud_str = ''.join(received)
+            print 'rebuilt string'
+            # self.lock.acquire()
+            print "acquire lock"
+            self.playlist.append(aud_str)
+            print "added str to playlist"
+            # self.lock.release()
+            print "released lock"
+            print "appended"
+
+    def process_audio(self):
+        while True:
+            try:
+                print "got here"
+                # acquired = self.lock.acquire(0)
+                if len(self.playlist) > 0:
+                    current_track = self.playlist[0]
+                    print "got a track!"
+                    raw_rec = np.fromstring(current_track, 'float32')
+                    sd.play(raw_rec, 48000, blocking=True)
+                    print "played track"
+                else:
+                    time.sleep(1)
+                    print "no track, retrying in 1"
+                    continue
+                self.playlist.remove(current_track)
+            # self.lock.release()
+            # if True:
+            #     Player.play(current_track)
+            #     print "played"
+            # else:
+            #     pass
+            finally:
+                if not self.recv_thread.isAlive():
+                    break
+
+if __name__ == '__main__':
+    # a = Player.record()
+    # Player.play(a)
+
+    queue = []
+    recv_thread = RecvAud(7079)
+    send_thread = SendAud('127.0.0.1', 7079)
+    queue.append(recv_thread)
+    queue.append(send_thread)
+    recv_thread.start()
+    send_thread.start()
+    for thread in queue:
+        thread.join()
+=======
+import time
+
+# duration = 10 # in seconds, must be int
+# fs = 48000 # 44100 or 48000 frames per second
+
+
+def makeRecording(duration=10, fs=48000):
+	raw_vr = sd.rec(duration * fs, samplerate=fs, channels=2)
+	sd.wait()
+	return raw_vr.tostring()
+
+def playRecording(string_data, fs=48000, data_type = 'float32'):
+	reconstructed_data = np.fromstring(string_data, data_type)
+	sd.play(reconstructed_data, fs)
+	sd.wait()
+
+def test():
+	a = makeRecording()
+	playRecording(a)
+
+if __name__ == '__main__':
+	test()
+>>>>>>> 5b4c03d89f1d30f77450e6e0bd3cbb4cdade8d83
